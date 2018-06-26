@@ -5,7 +5,13 @@ HOSTPORT_MYSQL=8022
 OUTPORT_FLASK=5000
 OUTPORT_MYSQL=3306
 
+### 环境：
+Python3.0以上
 
+### 字典
+Last trade volume 交易量 
+Best bid and ask prices 买入价和卖出价 
+Best bid and ask volumes 买入量和卖出量
 
 <p align="center">
   <img src="doc/icon.jpg">
@@ -218,8 +224,8 @@ The column definition is as follows:
 |Name|Description|
 |---|---|
 |trade_px|Last trade price|
-|trade_volume|Last trade volume|
-|b\<n\>, a\<n\>|Best bid and ask prices, where n is between 1 and 5|
+|trade_volume|Last trade volume 交易量|
+|b\<n\>, a\<n\>|Best bid and ask prices 买入价和卖出价, where n is between 1 and 5|
 |bq\<n\>, aq\<n\>|Best bid and ask volumes, where n is between 1 and 5|
 |update_type|Update type. 1 indicates price depth update, and 2 indicates trade update|
 |order_date_time, trade_date_time|Last update time for the price depth and the trades|
