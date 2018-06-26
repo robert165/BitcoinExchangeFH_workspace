@@ -1,0 +1,40 @@
+FROM ubuntu:16.04
+MAINTAINER lyjk2001@sina.com
+
+#RUN echo "nameserver 192.168.200.200" | tee /etc/resolv.conf > /dev/null 
+
+ADD sources.list /etc/apt/sources.list
+
+RUN apt-get clean
+# Install basic dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	python-pip \
+        build-essential 
+#RUN pip install --upgrade pip
+RUN pip install setuptools 
+
+COPY requirement.txt /tmp/
+RUN pip install --requirement /tmp/requirement.txt
+COPY . /tmp/
+
+
+# MySQL-server
+RUN apt-get update 
+RUN apt-get install -y mysql-server
+
+RUN /etc/init.d/mysql start &&\
+mysql -e "grant all privileges on *.* to 'root'@'%' identified by 'kws123';"&&\
+mysql -e "grant all privileges on *.* to 'root'@'localhost' identified by 'kws123';"&&\
+mysql -u root -pkws123 -e "show databases;"
+
+EXPOSE 3306
+
+ENTRYPOINT /usr/bin/mysqld_safe
+
+
+WORKDIR /workspace
+
+# mysql port
+EXPOSE 3306
+# flask port
+EXPOSE 5000
