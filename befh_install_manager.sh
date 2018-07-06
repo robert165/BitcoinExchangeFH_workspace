@@ -24,13 +24,17 @@ echo "# 2./workspace/Coin-Crawler/bin/deep_ocr_id_card_reco --img /workspace/img
 "
 
 IMAGENAME=bitcoinexchangefh_dockerimage
-IMAGETAGCPU=py27
-IMAGETAGGPU=py27
+IMAGETAGCPU=py36
+IMAGETAGGPU=py36
 HOSTPORT_FLASK=8021
 HOSTPORT_MYSQL=8022
 OUTPORT_FLASK=5000
 OUTPORT_MYSQL=3306
-
+MYSQLIMAGENAME=mysql
+MYSQLIMAGETAG=57
+MYSQLCONTAINERNAME=kwsmysql
+MYSQLCONTAINERNAMELINK=db
+MYSQL_ROOT_PASSWORD=kws123
 
 ###################################
 ##	地址：显示当前IP等信息，询问是否更改
@@ -185,14 +189,16 @@ then
 fi
 
 
+#sudo docker build -t $MYSQLIMAGENAME:$MYSQLIMAGETAG -f ${VOLUMEPATH}/docker/Dockerfile.Mysql ${VOLUMEPATH}/docker
 
 
 
 #描述：删除顽固的None镜像
-
+#sudo docker ps -a  | awk '{print $1 }'|xargs docker stop 
+#sudo docker ps -a  | awk '{print $1 }'|xargs docker rm
 sudo docker ps -a | grep "Exited" | awk '{print $1 }'|xargs docker stop 
 sudo docker ps -a | grep "Exited" | awk '{print $1 }'|xargs docker rm
-sudo docker images|grep none|awk '{print $3 }'|xargs docker rmi
+#sudo docker images|grep none|awk '{print $3 }'|xargs docker rmi
 
 
 echo
@@ -220,12 +226,28 @@ echo
 echo "############################################"
 echo "##	运行，start镜像，并加载volume	##"
 echo "############################################"
+
+#-p 3306:3306：将容器的3306端口映射到主机的3306端口。
+#-v $PWD/conf/my.cnf:/etc/mysql/my.cnf：将主机当前目录下的 conf/my.cnf挂载到容器
+#-v $PWD/logs:/logs：将主机当前目录下的logs目录挂载到容器的/logs
+#-v $PWD/data:/mysql_data：将主机当前目录下的data目录挂载到容器的/mysql_data
+#-e MYSQL_ROOT_PASSWORD=123456：初始化root用户的密码
+
+
+#sudo mkdir -p ${VOLUMEPATH}/mysql/{conf,logs,data}
+#sudo docker run --name $MYSQLCONTAINERNAME -p $HOSTPORT_MYSQL:$OUTPORT_MYSQL -v ${VOLUMEPATH}/mysql/conf:/etc/mysql/conf.d -v ${VOLUMEPATH}/mysql/logs:/logs -v ${VOLUMEPATH}/mysql/data:/var/lib/mysql  -e MYSQL\_ROOT\_PASSWORD=$MYSQL_ROOT_PASSWORD  -d  $MYSQLIMAGENAME:$MYSQLIMAGETAG  
+
+
 # Run the app, mapping your machine’s $HOSTPORT to the container’s published port $OUTPORT using -p:
 if [ "$CHIPMODE"x = "cpu"x ];
 then
-	sudo docker run -it --volume ${VOLUMEPATH}:/workspace -v /workspace/mysql:/var/lib/mysql  -p $HOSTPORT_FLASK:$OUTPORT_FLASK -p $HOSTPORT_MYSQL:$OUTPORT_MYSQL $IMAGENAME:$IMAGETAGCPU
-	sudo docker run -it --volume ${VOLUMEPATH}:/workspace -v /workspace/mysql:/var/lib/mysql -p $HOSTPORT_FLASK:$OUTPORT_FLASK -p $HOSTPORT_MYSQL:$OUTPORT_MYSQL $IMAGENAME:$IMAGETAGCPU /bin/bash
+	#sudo docker run -it --link=$MYSQLCONTAINERNAME:$MYSQLCONTAINERNAMELINK  --volume ${VOLUMEPATH}:/workspace  -p $HOSTPORT_FLASK:$OUTPORT_FLASK  $IMAGENAME:$IMAGETAGCPU
+	#sudo docker run -it --link=$MYSQLCONTAINERNAME:$MYSQLCONTAINERNAMELINK --volume ${VOLUMEPATH}:/workspace  -p $HOSTPORT_FLASK:$OUTPORT_FLASK  $IMAGENAME:$IMAGETAGCPU /bin/bash
+	sudo docker run -it  --volume ${VOLUMEPATH}:/workspace  -p $HOSTPORT_FLASK:$OUTPORT_FLASK  $IMAGENAME:$IMAGETAGCPU
+	sudo docker run -it  --volume ${VOLUMEPATH}:/workspace  -p $HOSTPORT_FLASK:$OUTPORT_FLASK  $IMAGENAME:$IMAGETAGCPU /bin/bash
 	echo
 fi
+
+
 
 

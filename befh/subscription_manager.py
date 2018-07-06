@@ -1,4 +1,4 @@
-from befh.instrument import Instrument
+from instrument import Instrument
 try:
     import ConfigParser
 except ImportError:

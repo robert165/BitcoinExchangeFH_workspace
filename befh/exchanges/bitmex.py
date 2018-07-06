@@ -1,9 +1,9 @@
-from befh.ws_api_socket import WebSocketApiClient
-from befh.market_data import L2Depth, Trade
-from befh.exchanges.gateway import ExchangeGateway
-from befh.instrument import Instrument
-from befh.util import Logger
-from befh.clients.sql_template import SqlClientTemplate
+from ws_api_socket import WebSocketApiClient
+from market_data import L2Depth, Trade
+from exchanges.gateway import ExchangeGateway
+from instrument import Instrument
+from util import Logger
+from clients.sql_template import SqlClientTemplate
 import time
 import threading
 import json

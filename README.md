@@ -1,3 +1,24 @@
+## 向csv里建立数据
+1.创建 exchanges_snapshot.csv
+2.执行 
+# 插入csv文件命令
+bitcoinexchangefh  -csv -csvpath ./tmp -instmts subscriptions.ini
+
+bitcoinexchangefh -zmq -zmqdest "tcp://127.0.0.1:6001" -instmts subscriptions.ini
+
+# 插入mysql命令
+bitcoinexchangefh -mysql -mysqldest "xunibiAPP:xunibiAPP2018@192.168.200.201:3306" -mysqlschema "xunibiAPP" -instmts subscriptions.ini
+
+
+
+## mysql服务地址
+>>mysql -h 192.168.200.201 -P 3306 -u xunibiAPP -p 
+密码:xunibiAPP2018
+库名:xunibiAPP
+
+
+
+
 ### 端口对应
 Flask，Mysql
 HOSTPORT_FLASK=8021

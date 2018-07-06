@@ -1,5 +1,5 @@
-from befh.api_socket import ApiSocket
-from befh.util import Logger
+from api_socket import ApiSocket
+from util import Logger
 import websocket
 import threading
 import json

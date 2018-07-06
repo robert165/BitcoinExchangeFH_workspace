@@ -1,4 +1,4 @@
-from befh.api_socket import ApiSocket
+from api_socket import ApiSocket
 try:
     import urllib.request as urlrequest
 except ImportError:

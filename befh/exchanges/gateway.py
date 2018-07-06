@@ -1,9 +1,9 @@
 #!/bin/python
-from befh.clients.zmq import ZmqClient
-from befh.clients.csv import FileClient
-from befh.clients.mysql import MysqlClient
-from befh.clients.sqlite import SqliteClient
-from befh.market_data import L2Depth, Trade, Snapshot
+from clients.zmq import ZmqClient
+from clients.csv import FileClient
+from clients.mysql import MysqlClient
+from clients.sqlite import SqliteClient
+from market_data import L2Depth, Trade, Snapshot,Detail_Snapshot
 from datetime import datetime
 from threading import Lock
 
@@ -13,6 +13,7 @@ class ExchangeGateway:
     # Applied on all gateways whether to record the timestamp in local machine,
     # rather than exchange timestamp given by the API
     is_local_timestamp = False
+    detail_snapshot_id = 0
     ############################################################################
 
     """
@@ -29,6 +30,7 @@ class ExchangeGateway:
         self.api_socket = api_socket
         self.lock = Lock()
         self.exch_snapshot_id = 0
+
         self.date_time = datetime.utcnow().date()
 
     @classmethod
@@ -55,8 +57,17 @@ class ExchangeGateway:
         return 'exchanges_snapshot'
 
     @classmethod
+    def get_detail_snapshot_table_name(cls):
+        return 'exchanges_detail_snapshot'
+
+
+    @classmethod
     def is_allowed_snapshot(cls, db_client):
         return not isinstance(db_client, FileClient)
+
+    @classmethod
+    def is_allowed_detail_snapshot(cls, db_client):
+        return not isinstance(db_client, ZmqClient)
 
     @classmethod
     def is_allowed_instmt_record(cls, db_client):
@@ -69,6 +80,40 @@ class ExchangeGateway:
                              Snapshot.columns(),
                              Snapshot.types(),
                              [0,1], is_ifnotexists=True)
+
+    @classmethod
+    def init_detail_snapshot_table(cls, db_clients):
+        for db_client in db_clients:
+            db_client.create(cls.get_detail_snapshot_table_name(),
+                             Detail_Snapshot.columns(),
+                             Detail_Snapshot.types(),
+                             is_ifnotexists=True)
+    # @classmethod
+    # def init_detail_snapshot_table(cls, db_clients):
+    #     table_name=cls.get_detail_snapshot_table_name()
+    #     for db_client in db_clients:
+    #         # db_client.create(cls.get_detail_snapshot_table_name(),
+    #         #                  Detail_Snapshot.columns(),
+    #         #                  Detail_Snapshot.types(),
+    #         #                  [0, 1], is_ifnotexists=True)
+    #         db_client.create(table_name,
+    #                          ['id'] + Detail_Snapshot.columns(False),
+    #                          ['int'] + Detail_Snapshot.types(False),
+    #                          [0], is_ifnotexists=True)
+    #
+    #         #if isinstance(db_client, (MysqlClient, SqliteClient)):
+    #             #with self.lock:
+    #         r = db_client.execute('select max(id) from {};'.format(table_name))
+    #         db_client.conn.commit()
+    #         if r:
+    #             res = db_client.cursor.fetchone()
+    #             max_id = res['max(id)'] if isinstance(db_client, MysqlClient) else res[0]
+    #             if max_id:
+    #                 cls.detail_snapshot_id = max_id
+    #             else:
+    #                 cls.detail_snapshot_id = 0
+
+
 
     def init_instmt_snapshot_table(self, instmt):
         table_name = self.get_instmt_snapshot_table_name(instmt.get_exchange_name(),
@@ -108,6 +153,12 @@ class ExchangeGateway:
 
         return self.exch_snapshot_id
 
+    def get_detail_snapshot_id(self):
+        with self.lock:
+            self.detail_snapshot_id += 1
+
+        return self.detail_snapshot_id
+
     def insert_order_book(self, instmt):
         """
         Insert order book row into the database client
@@ -133,6 +184,20 @@ class ExchangeGateway:
                                      primary_key_index=[0,1],
                                      is_orreplace=True,
                                      is_commit=True)
+
+                if self.is_allowed_detail_snapshot(db_client):
+                    db_client.insert(table=self.get_detail_snapshot_table_name(),
+                                     columns=Detail_Snapshot.columns(),
+                                     types=Detail_Snapshot.types(),
+                                     values =Detail_Snapshot.values(instmt.get_exchange_name(),
+                                                            instmt.get_instmt_name(),
+                                                            instmt.get_l2_depth(),
+                                                            Trade() if instmt.get_last_trade() is None else instmt.get_last_trade(),
+                                                             Detail_Snapshot.UpdateType.ORDER_BOOK,datetime.utcnow().strftime("%Y%m%d")),
+                                     #primary_key_index=[0,1],
+                                     is_orreplace=False,
+                                     is_commit=True)
+
 
                 if self.is_allowed_instmt_record(db_client):
                     db_client.insert(table=instmt.get_instmt_snapshot_table_name(),
@@ -173,6 +238,7 @@ class ExchangeGateway:
             id = self.get_instmt_snapshot_id(instmt)
             for db_client in self.db_clients:
                 is_allowed_snapshot = self.is_allowed_snapshot(db_client)
+                is_allowed_detail_snapshot = self.is_allowed_detail_snapshot(db_client)
                 is_allowed_instmt_record = self.is_allowed_instmt_record(db_client)
                 if is_allowed_snapshot:
                     db_client.insert(table=self.get_snapshot_table_name(),
@@ -186,6 +252,30 @@ class ExchangeGateway:
                                      primary_key_index=[0,1],
                                      is_orreplace=True,
                                      is_commit=not is_allowed_instmt_record)
+
+                if is_allowed_detail_snapshot:
+                    db_client.insert(table=self.get_detail_snapshot_table_name(),
+                                     columns=Detail_Snapshot.columns(),
+                                     values=Detail_Snapshot.values(instmt.get_exchange_name(),
+                                                            instmt.get_instmt_name(),
+                                                            instmt.get_l2_depth(),
+                                                            instmt.get_last_trade(),
+                                                                   Detail_Snapshot.UpdateType.TRADES,datetime.utcnow().strftime("%Y%m%d")),
+                                     types=Detail_Snapshot.types(),
+                                     # primary_key_index=[0,1],
+                                     is_orreplace=False,
+                                     is_commit=not is_allowed_instmt_record)
+                # if is_allowed_detail_snapshot:
+                #     db_client.insert(table=self.get_detail_snapshot_table_name(),
+                #                      columns=['id'] + Detail_Snapshot.columns(False),
+                #                      types=['int'] + Detail_Snapshot.types(False),
+                #                      values=[id] +
+                #                             Detail_Snapshot.values(instmt.get_exchange_name(),
+                #                                             instmt.get_instmt_name(),
+                #                                             instmt.get_l2_depth(),
+                #                                             instmt.get_last_trade(),
+                #                                              Detail_Snapshot.UpdateType.TRADES),
+                #                      is_commit=True)
 
                 if is_allowed_instmt_record:
                     db_client.insert(table=instmt.get_instmt_snapshot_table_name(),

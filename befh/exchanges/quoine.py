@@ -1,9 +1,9 @@
-from befh.restful_api_socket import RESTfulApiSocket
-from befh.exchanges.gateway import ExchangeGateway
-from befh.market_data import L2Depth, Trade
-from befh.util import Logger
-from befh.instrument import Instrument
-from befh.clients.sql_template import SqlClientTemplate
+from restful_api_socket import RESTfulApiSocket
+from exchanges.gateway import ExchangeGateway
+from market_data import L2Depth, Trade
+from util import Logger
+from instrument import Instrument
+from clients.sql_template import SqlClientTemplate
 import time
 import threading
 import random

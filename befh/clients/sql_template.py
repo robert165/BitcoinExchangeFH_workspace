@@ -1,7 +1,7 @@
 #!/bin/python
 
-from befh.clients.sql import SqlClient
-from befh.util import Logger
+from clients.sql import SqlClient
+from util import Logger
 
 
 class SqlClientTemplate(SqlClient):

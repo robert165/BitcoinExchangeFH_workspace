@@ -1,4 +1,4 @@
-from befh.clients.sql import SqlClient
+from clients.sql import SqlClient
 import pymysql
 
 
