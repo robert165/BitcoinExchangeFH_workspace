@@ -88,31 +88,6 @@ class ExchangeGateway:
                              Detail_Snapshot.columns(),
                              Detail_Snapshot.types(),
                              is_ifnotexists=True)
-    # @classmethod
-    # def init_detail_snapshot_table(cls, db_clients):
-    #     table_name=cls.get_detail_snapshot_table_name()
-    #     for db_client in db_clients:
-    #         # db_client.create(cls.get_detail_snapshot_table_name(),
-    #         #                  Detail_Snapshot.columns(),
-    #         #                  Detail_Snapshot.types(),
-    #         #                  [0, 1], is_ifnotexists=True)
-    #         db_client.create(table_name,
-    #                          ['id'] + Detail_Snapshot.columns(False),
-    #                          ['int'] + Detail_Snapshot.types(False),
-    #                          [0], is_ifnotexists=True)
-    #
-    #         #if isinstance(db_client, (MysqlClient, SqliteClient)):
-    #             #with self.lock:
-    #         r = db_client.execute('select max(id) from {};'.format(table_name))
-    #         db_client.conn.commit()
-    #         if r:
-    #             res = db_client.cursor.fetchone()
-    #             max_id = res['max(id)'] if isinstance(db_client, MysqlClient) else res[0]
-    #             if max_id:
-    #                 cls.detail_snapshot_id = max_id
-    #             else:
-    #                 cls.detail_snapshot_id = 0
-
 
 
     def init_instmt_snapshot_table(self, instmt):
@@ -180,7 +155,7 @@ class ExchangeGateway:
                                                             instmt.get_instmt_name(),
                                                             instmt.get_l2_depth(),
                                                             Trade() if instmt.get_last_trade() is None else instmt.get_last_trade(),
-                                                            Snapshot.UpdateType.ORDER_BOOK),
+                                                            Snapshot.UpdateType.ORDER_BOOK,datetime.utcnow().strftime("%Y%m%d")),
                                      primary_key_index=[0,1],
                                      is_orreplace=True,
                                      is_commit=True)
@@ -247,7 +222,7 @@ class ExchangeGateway:
                                                             instmt.get_instmt_name(),
                                                             instmt.get_l2_depth(),
                                                             instmt.get_last_trade(),
-                                                            Snapshot.UpdateType.TRADES),
+                                                            Snapshot.UpdateType.TRADES,datetime.utcnow().strftime("%Y%m%d")),
                                      types=Snapshot.types(),
                                      primary_key_index=[0,1],
                                      is_orreplace=True,

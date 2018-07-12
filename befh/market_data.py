@@ -221,7 +221,8 @@ class Snapshot(MarketDataBase):
                     'a1', 'a2', 'a3', 'a4', 'a5',
                     'bq1', 'bq2', 'bq3', 'bq4', 'bq5',
                     'aq1', 'aq2', 'aq3', 'aq4', 'aq5',
-                    'order_date_time', 'trades_date_time', 'update_type']
+                    'order_date_time', 'trades_date_time', 'update_type','datum',
+                    'ex_rate_rmb','ex_rate_usd','ex_trade_px_rmb','ex_trade_px_usd']
         else:
             return ['trade_px', 'trade_volume',
                     'b1', 'b2', 'b3', 'b4', 'b5',
@@ -239,7 +240,7 @@ class Snapshot(MarketDataBase):
             return ['varchar(20)', 'varchar(20)', 'decimal(20,8)', 'decimal(20,8)'] + \
                    ['decimal(20,8)'] * 10 + \
                    ['decimal(20,8)'] * 10 + \
-                   ['varchar(25)', 'varchar(25)', 'int']
+                   ['varchar(25)', 'varchar(25)', 'int', 'varchar(25)', 'decimal(20,8)', 'decimal(20,8)', 'decimal(20,8)', 'decimal(20,8)']
         else:
             return ['decimal(20,8)', 'decimal(20,8)'] + \
                    ['decimal(20,8)'] * 10 + \
@@ -248,11 +249,59 @@ class Snapshot(MarketDataBase):
 
                 
     @staticmethod
-    def values(exchange_name='', instmt_name='', l2_depth=None, last_trade=None, update_type=UpdateType.NONE):
+    def values(exchange_name='', instmt_name='', l2_depth=None, last_trade=None, update_type=UpdateType.NONE, datum=None):
         """
         Return values in a list
         """
         assert l2_depth is not None and last_trade is not None, "L2 depth and last trade must not be none."
+
+        ex_rate_rmb = {
+            'INST_BTC_USD': 6.6764,
+            'INST_ETH_USD': 6.6764,
+            'INST_LTC_USD': 6.6764,
+            'INST_BTC_USD': 6.6764,
+            'INST_XBT_USD': 6.6764,
+            'INST_LTC_USD': 6.6764,
+            'INST_ETH_USD': 6.6764,
+            'INST_ETH_EUR': 7.7927,
+            'INST_LTC_EUR': 7.7927,
+            'INST_XBT_EUR': 7.7927,
+            'INST_BTC_JPY': 0.05955,
+            'INST_ETH_JPY': 0.05955,
+            'INST_LTC_JPY': 0.05955,
+            'INST_BTC_JPY': 0.05955,
+            'INST_ETH_JPY': 0.05955,
+            'INST_LTC_JPY': 0.05955,
+            'INST_BTC_KRW': 0.005915,
+            'INST_ETH_KRW': 0.005915,
+            'INST_LTC_KRW': 0.005915,
+            'INST_BTC_ETH': 2972
+        }.get(instmt_name, last_trade.trade_price)
+
+        ex_rate_usd = {
+            'INST_BTC_USD': 1,
+            'INST_ETH_USD': 1,
+            'INST_LTC_USD': 1,
+            'INST_BTC_USD': 1,
+            'INST_XBT_USD': 1,
+            'INST_LTC_USD': 1,
+            'INST_ETH_USD': 1,
+            'INST_ETH_EUR': 1.1675,
+            'INST_LTC_EUR': 1.1675,
+            'INST_XBT_EUR': 1.1675,
+            'INST_BTC_JPY': 0.008921,
+            'INST_ETH_JPY': 0.008921,
+            'INST_LTC_JPY': 0.008921,
+            'INST_BTC_JPY': 0.008921,
+            'INST_ETH_JPY': 0.008921,
+            'INST_LTC_JPY': 0.008921,
+            'INST_BTC_KRW': 0.0008859,
+            'INST_ETH_KRW': 0.0008859,
+            'INST_LTC_KRW': 0.0008859,
+            'INST_BTC_ETH': 446
+        }.get(instmt_name, last_trade.trade_price)
+        ex_trade_px_rmb = last_trade.trade_price * ex_rate_rmb
+        ex_trade_px_usd = last_trade.trade_price * ex_rate_usd
         return ([exchange_name] if exchange_name else []) + \
                ([instmt_name] if instmt_name else []) + \
                [last_trade.trade_price, last_trade.trade_volume] + \
@@ -260,7 +309,9 @@ class Snapshot(MarketDataBase):
                [a.price for a in l2_depth.asks[0:5]] + \
                [b.volume for b in l2_depth.bids[0:5]] + \
                [a.volume for a in l2_depth.asks[0:5]] + \
-               [l2_depth.date_time, last_trade.date_time, update_type]
+               [l2_depth.date_time, last_trade.date_time, update_type,datum] + \
+               [ex_rate_rmb, ex_rate_usd, ex_trade_px_rmb, ex_trade_px_usd]
+
 
 
 class Detail_Snapshot(MarketDataBase):
@@ -294,7 +345,8 @@ class Detail_Snapshot(MarketDataBase):
                     'a1', 'a2', 'a3', 'a4', 'a5',
                     'bq1', 'bq2', 'bq3', 'bq4', 'bq5',
                     'aq1', 'aq2', 'aq3', 'aq4', 'aq5',
-                    'order_date_time', 'trades_date_time', 'update_type','datum']
+                    'order_date_time', 'trades_date_time', 'update_type','datum',
+                    'ex_rate_rmb','ex_rate_usd','ex_trade_px_rmb','ex_trade_px_usd']
         else:
             return ['trade_px', 'trade_volume',
                     'b1', 'b2', 'b3', 'b4', 'b5',
@@ -312,7 +364,7 @@ class Detail_Snapshot(MarketDataBase):
             return ['varchar(20)', 'varchar(20)', 'decimal(20,8)', 'decimal(20,8)'] + \
                    ['decimal(20,8)'] * 10 + \
                    ['decimal(20,8)'] * 10 + \
-                   ['varchar(25)', 'varchar(25)', 'int', 'varchar(25)']
+                   ['varchar(25)', 'varchar(25)', 'int', 'varchar(25)', 'decimal(20,8)', 'decimal(20,8)', 'decimal(20,8)', 'decimal(20,8)']
         else:
             return ['decimal(20,8)', 'decimal(20,8)'] + \
                    ['decimal(20,8)'] * 10 + \
@@ -325,6 +377,53 @@ class Detail_Snapshot(MarketDataBase):
         Return values in a list
         """
         assert l2_depth is not None and last_trade is not None, "L2 depth and last trade must not be none."
+        ex_rate_rmb={
+            'INST_BTC_USD': 6.6764,
+            'INST_ETH_USD': 6.6764,
+            'INST_LTC_USD': 6.6764,
+            'INST_BTC_USD': 6.6764,
+            'INST_XBT_USD': 6.6764,
+            'INST_LTC_USD': 6.6764,
+            'INST_ETH_USD': 6.6764,
+            'INST_ETH_EUR': 7.7927,
+            'INST_LTC_EUR': 7.7927,
+            'INST_XBT_EUR': 7.7927,
+            'INST_BTC_JPY': 0.05955,
+            'INST_ETH_JPY': 0.05955,
+            'INST_LTC_JPY': 0.05955,
+            'INST_BTC_JPY': 0.05955,
+            'INST_ETH_JPY': 0.05955,
+            'INST_LTC_JPY': 0.05955,
+            'INST_BTC_KRW': 0.005915,
+            'INST_ETH_KRW': 0.005915,
+            'INST_LTC_KRW': 0.005915,
+            'INST_BTC_ETH': 2972
+        }.get(instmt_name, last_trade.trade_price)
+
+        ex_rate_usd={
+            'INST_BTC_USD': 1,
+            'INST_ETH_USD': 1,
+            'INST_LTC_USD': 1,
+            'INST_BTC_USD': 1,
+            'INST_XBT_USD': 1,
+            'INST_LTC_USD': 1,
+            'INST_ETH_USD': 1,
+            'INST_ETH_EUR': 1.1675,
+            'INST_LTC_EUR': 1.1675,
+            'INST_XBT_EUR': 1.1675,
+            'INST_BTC_JPY': 0.008921,
+            'INST_ETH_JPY': 0.008921,
+            'INST_LTC_JPY': 0.008921,
+            'INST_BTC_JPY': 0.008921,
+            'INST_ETH_JPY': 0.008921,
+            'INST_LTC_JPY': 0.008921,
+            'INST_BTC_KRW': 0.0008859,
+            'INST_ETH_KRW': 0.0008859,
+            'INST_LTC_KRW': 0.0008859,
+            'INST_BTC_ETH': 446
+        }.get(instmt_name, last_trade.trade_price)
+        ex_trade_px_rmb=last_trade.trade_price*ex_rate_rmb
+        ex_trade_px_usd=last_trade.trade_price*ex_rate_usd
         return ([exchange_name] if exchange_name else []) + \
                ([instmt_name] if instmt_name else []) + \
                [last_trade.trade_price, last_trade.trade_volume] + \
@@ -332,4 +431,5 @@ class Detail_Snapshot(MarketDataBase):
                [a.price for a in l2_depth.asks[0:5]] + \
                [b.volume for b in l2_depth.bids[0:5]] + \
                [a.volume for a in l2_depth.asks[0:5]] + \
-               [l2_depth.date_time, last_trade.date_time, update_type,datum]
+               [l2_depth.date_time, last_trade.date_time, update_type,datum] + \
+               [ex_rate_rmb,ex_rate_usd,ex_trade_px_rmb,ex_trade_px_usd]
