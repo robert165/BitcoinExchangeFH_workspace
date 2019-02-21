@@ -1,6 +1,22 @@
+## 描述 保存各大虚拟币网站的比特币\莱特币\以太坊实时交易信息到mysql中
+
+***********************************
+********     快速执行       *******
+***********************************
+1. 执行befh_install_manager.sh建立运行Docker环境
+2. 打开PyCharm,并打开项目BitcoinExchangeFH_workspace,
+   在file-Settings-Project-Project Interpreter的下拉框中找到Remote Python 3.6.6 Docker (bitcoinexchangefh_dockerimage:py36)
+   点OK
+3. 待环境载入完毕,在Run...- Edit Configurations... - 
+   Script path:中输入 /home/leo/PythonProjects/BitcoinExchangeFH/BitcoinExchangeFH_workspace/befh/bitcoinexchangefh.py
+   Parameter:中输入-mysql -mysqldest "xunibiAPP:xunibiAPP2018@192.168.200.201:3306" -mysqlschema "xunibiAPP" -instmts subscriptions.ini
+   点击Run(观察MySQL数据表,如过数据卡住,则再执行一次)
+更多查看BitcoinExchangeFH_workspace/befh中的README.md
+
+
+注意:到午夜会断掉数据连接,需要重新执行bitcoinexchangefh.py
 ## 向csv里建立数据
 1.创建 exchanges_snapshot.csv
-2.执行 
 # 插入csv文件命令
 bitcoinexchangefh  -csv -csvpath ./tmp -instmts subscriptions.ini
 
