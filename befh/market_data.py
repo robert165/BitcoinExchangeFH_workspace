@@ -275,7 +275,7 @@ class Snapshot(MarketDataBase):
             'INST_BTC_KRW': 0.005915,
             'INST_ETH_KRW': 0.005915,
             'INST_LTC_KRW': 0.005915,
-            'INST_BTC_ETH': 2972
+            'INST_ETH_BTC': 42857.1
         }.get(instmt_name, last_trade.trade_price)
 
         ex_rate_usd = {
@@ -298,7 +298,7 @@ class Snapshot(MarketDataBase):
             'INST_BTC_KRW': 0.0008859,
             'INST_ETH_KRW': 0.0008859,
             'INST_LTC_KRW': 0.0008859,
-            'INST_BTC_ETH': 446
+            'INST_ETH_BTC': 6371.4222
         }.get(instmt_name, last_trade.trade_price)
         ex_trade_px_rmb = last_trade.trade_price * ex_rate_rmb
         ex_trade_px_usd = last_trade.trade_price * ex_rate_usd
@@ -397,7 +397,7 @@ class Detail_Snapshot(MarketDataBase):
             'INST_BTC_KRW': 0.005915,
             'INST_ETH_KRW': 0.005915,
             'INST_LTC_KRW': 0.005915,
-            'INST_BTC_ETH': 2972
+            'INST_ETH_BTC': 42857.1
         }.get(instmt_name, last_trade.trade_price)
 
         ex_rate_usd={
@@ -420,7 +420,7 @@ class Detail_Snapshot(MarketDataBase):
             'INST_BTC_KRW': 0.0008859,
             'INST_ETH_KRW': 0.0008859,
             'INST_LTC_KRW': 0.0008859,
-            'INST_BTC_ETH': 446
+            'INST_ETH_BTC': 6371.4222
         }.get(instmt_name, last_trade.trade_price)
         ex_trade_px_rmb=last_trade.trade_price*ex_rate_rmb
         ex_trade_px_usd=last_trade.trade_price*ex_rate_usd

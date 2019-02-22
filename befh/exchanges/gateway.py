@@ -156,7 +156,7 @@ class ExchangeGateway:
                                                             instmt.get_l2_depth(),
                                                             Trade() if instmt.get_last_trade() is None else instmt.get_last_trade(),
                                                             Snapshot.UpdateType.ORDER_BOOK,datetime.utcnow().strftime("%Y%m%d")),
-                                     primary_key_index=[0,1],
+                                     #primary_key_index=[0,1],
                                      is_orreplace=True,
                                      is_commit=True)
 
@@ -251,6 +251,7 @@ class ExchangeGateway:
                 #                                             instmt.get_last_trade(),
                 #                                              Detail_Snapshot.UpdateType.TRADES),
                 #                      is_commit=True)
+
 
                 if is_allowed_instmt_record:
                     db_client.insert(table=instmt.get_instmt_snapshot_table_name(),
